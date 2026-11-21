@@ -19,6 +19,30 @@ const data=[
 ["SCARF-Modell","Psychologie","Status, Certainty, Autonomy, Relatedness, Fairness.",["Mögliche soziale Bedrohungen erkennen.","Wertschätzung und Klarheit schaffen.","Wahlmöglichkeiten und Fairness erhöhen."],"Welche Informationen oder Entscheidungsspielräume würden dir helfen?","SCARF ist Reflexionshilfe, keine Diagnose."]
 ];
 const diagramLabels=[["Zuhören","Spiegeln","Klären"],["Aussage","Wiedergeben","Prüfen"],["Offen","Erkunden","Konkret"],["Ich","Team","Andere"],["Ziel","Optionen","Schritt"],["Wahrnehmung","Wirkung","Wunsch"],["Situation","Verhalten","Impact"],["Zukunft","Ideen","Test"],["Beobachtung","Bedürfnis","Bitte"],["Position","Interesse","Lösung"],["Ruhe","Anerkennen","Klären"],["Fakten","Anhören","Vereinbaren"],["Einwand","Verstehen","Spielraum"],["Goal","Reality","Will"],["Sache","Beziehung","Appell"],["Eltern-Ich","Erwachsen","Kind-Ich"],["Status","Sicherheit","Fairness"]];
-function sketch(i){let t=diagramLabels[i],xs=[62,180,298],colors=["#d9efff","#fff0bd","#ddf4e5"];let nodes=xs.map((x,j)=>'<g><ellipse cx="'+x+'" cy="55" rx="42" ry="34" fill="'+colors[j]+'"/><circle class="line" cx="'+x+'" cy="55" r="17"/><path class="line" d="M'+(x-9)+' 55l6 7 13-15"/><text x="'+x+'" y="112" text-anchor="middle">'+t[j]+'</text></g>').join("");return '<svg class="scribble" role="img" aria-label="Schaubild '+t.join(' – ')+'" viewBox="0 0 360 135" xmlns="http://www.w3.org/2000/svg">'+nodes+'<path class="line" d="M108 55h24l-7-6m7 6-7 6M226 55h24l-7-6m7 6-7 6"/></svg>'}
+function sketch(i){
+const t=diagramLabels[i], colors=["#d9efff","#fff0bd","#ddf4e5"];
+const icons=[
+'<path d="M-18 0q-12-25 8-28 20-3 18 16-2 9-11 14l-2 12q-2 8-11 3"/>',
+'<path d="M-23-15q23-15 46 0v20q-8 10-19 10l-14 11 2-13q-18-7-15-28z"/><path d="M-12-5h25M-12 3h15"/>',
+'<path d="M-13-10q0-13 13-13t13 13q0 9-12 17v5M0 22v2"/>',
+'<circle cx="-9" cy="-7" r="8"/><circle cx="13" cy="-4" r="8"/><path d="M-27 23q0-20 18-20M-3 23q0-18 16-18"/>',
+'<path d="M-25 16l18-19 11 10 20-27M13-20h11v12"/>',
+'<circle r="24"/><circle r="15"/><circle r="5"/><path d="M10-10l20-20M20-30h10v10"/>',
+'<rect x="-24" y="-21" width="48" height="42" rx="5"/><path d="M-15-7h30M-15 3h30M-15 13h18"/>',
+'<path d="M-23-8h30l-9-9M7 9h-30l9 9"/>',
+'<path d="M-22-17h44v34h-44zM-15-8h30M-15 1h22M-15 10h15"/>',
+'<path d="M-26 14q25-32 52 0M-22-14q22 24 44 0"/>',
+'<path d="M-24-14q24-22 48 0M-24 14q24 22 48 0M0-25v50"/>',
+'<path d="M-23-20h46v40h-46zM-13-7h26M-13 3h26M-13 13h14"/>',
+'<path d="M-24-13q24-23 48 0v20q-8 12-24 12l-12 10 1-12q-13-8-13-30z"/>',
+'<path d="M-25 18l16-32 11 14 22-24M12-24h12v12"/>',
+'<path d="M-22-15h44v30h-44zM-12-5h24M-12 4h16"/>',
+'<circle cx="-12" cy="-8" r="10"/><circle cx="12" cy="-8" r="10"/><path d="M-26 22q0-18 14-18M-2 22q0-18 14-18"/>',
+'<path d="M0-27l20 12v23L0 27-20 8v-23zM-20-15L0-3l20-12M0-3v30"/>'
+];
+let icon=icons[i]||icons[0];
+let nodes=[62,180,298].map((x,j)=>'<g transform="translate('+x+' 54)"><ellipse rx="43" ry="35" fill="'+colors[j]+'"/><g class="line" transform="scale('+(j===0?0.95:j===1?0.72:0.6)+')">'+icon+'</g></g><text x="'+x+'" y="113" text-anchor="middle">'+t[j]+'</text>').join("");
+return '<svg class="scribble" role="img" aria-label="Schaubild '+t.join(' – ')+'" viewBox="0 0 360 135" xmlns="http://www.w3.org/2000/svg">'+nodes+'<path class="line" d="M108 55h24l-7-6m7 6-7 6M226 55h24l-7-6m7 6-7 6"/></svg>';
+}
 const cats=["Alle","Favoriten",...new Set(data.map(x=>x[1]))];let cat="Alle";let fav=[];try{fav=JSON.parse(localStorage.getItem("test5-fav")||"[]")}catch{}const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));function render(){document.querySelector("#nav").innerHTML=cats.map(c=>'<button class="'+(cat===c?"on":"")+'" data-cat="'+esc(c)+'">'+esc(c)+'</button>').join("");let term=document.querySelector("#search").value.toLocaleLowerCase("de");let rows=data.filter(x=>(cat==="Alle"||(cat==="Favoriten"?fav.includes(x[0]):cat===x[1]))&&x.flat().join(" ").toLocaleLowerCase("de").includes(term));document.querySelector("#count").textContent=rows.length+" Techniken";document.querySelector("#cards").innerHTML=rows.map(x=>'<article class="card"><div class="tag">'+esc(x[1])+'</div><h2>'+esc(x[0])+'</h2><p>'+esc(x[2])+'</p>'+sketch(data.indexOf(x))+'<div class="actions"><span class="tag">Praxisleitfaden</span><button data-fav="'+esc(x[0])+'">'+(fav.includes(x[0])?"★ Gespeichert":"☆ Merken")+'</button></div><details><summary>Schritte & Formulierungen anzeigen</summary><ol>'+x[3].map(s=>"<li>"+esc(s)+"</li>").join("")+'</ol><blockquote>'+esc(x[4])+'</blockquote><p><strong>Achte darauf:</strong> '+esc(x[5])+'</p></details></article>').join("")||"<p>Keine Treffer gefunden.</p>";document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{cat=b.dataset.cat;render()});document.querySelectorAll("[data-fav]").forEach(b=>b.onclick=()=>{fav=fav.includes(b.dataset.fav)?fav.filter(v=>v!==b.dataset.fav):[...fav,b.dataset.fav];try{localStorage.setItem("test5-fav",JSON.stringify(fav))}catch{}render()})}document.querySelector("#search").addEventListener("input",render);render();if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 </script></body></html>
