@@ -46,6 +46,32 @@ function favorites(){return top()+'<h2>Meine Favoriten</h2><p class="muted">Dein
 const questions=[{q:"Was ist die richtige Reihenfolge beim WWW-Feedback?",a:["Wunsch – Wahrnehmung – Wirkung","Wahrnehmung – Wirkung – Wunsch","Wirkung – Wunsch – Wahrnehmung"],right:1,why:"Zuerst beobachtbares Verhalten, dann die Wirkung und schließlich ein konkreter Wunsch."},{q:"Welche Frage ist besonders lösungsorientiert?",a:["Warum machst du das immer falsch?","Wer ist schuld?","Woran würdest du merken, dass es besser läuft?"],right:2,why:"Sie richtet den Blick auf erwünschte Veränderungen statt auf Schuld."},{q:"Wofür steht das G im GROW-Modell?",a:["Goal – Ziel","Growth – Wachstum","Group – Team"],right:0,why:"GROW beginnt mit einem klaren Ziel (Goal)."}];
 function quiz(){let q=questions[question];return top()+'<h2>Wissenstest</h2><p class="muted">Frage '+(question+1)+' von '+questions.length+'</p><div class="panel"><div class="panel-content"><h3>'+e(q.q)+'</h3>'+q.a.map((v,i)=>'<button class="quiz-option '+(answer===null?'':i===q.right?'correct':i===answer?'wrong':'')+'" data-answer="'+i+'">'+String.fromCharCode(65+i)+': '+e(v)+'</button>').join("")+(answer===null?'':'<div class="tip">'+(answer===q.right?'✓ Richtig! ':'Noch nicht ganz. ')+e(q.why)+'</div><button class="favorite" data-next="1">Nächste Frage →</button>')+'</div></div>'}
 function knowledge(){return top()+'<h2>Wissen</h2><div class="panel"><div class="panel-heading">Gespräche wirksam führen</div><div class="panel-content"><p>Gute Gesprächsführung verbindet Klarheit, Wertschätzung und echtes Interesse.</p><ol><li>Gesprächsziel klären</li><li>Aktiv zuhören und nachfragen</li><li>Beobachtungen von Bewertungen trennen</li><li>Gemeinsam nächste Schritte vereinbaren</li></ol></div></div><div class="tip">💡 Tipp: Öffne vor einem schwierigen Gespräch den passenden Leitfaden.</div>'}
-function render(){document.getElementById("app").innerHTML=screen==="home"?home():screen==="category"?categoryView():screen==="detail"?detail():screen==="guides"?guides():screen==="favorites"?favorites():screen==="quiz"?quiz():knowledge();const tabs=[["home","⌂","Übersicht"],["favorites","♡","Favoriten"],["guides","▣","Leitfäden"],["quiz","◇","Quiz"],["knowledge","ⓘ","Wissen"]];document.getElementById("bottom").innerHTML=tabs.map(t=>'<button data-go="'+t[0]+'" class="'+(screen===t[0]?"active":"")+'"><span>'+t[1]+'</span>'+t[2]+'</button>').join("");document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{screen=b.dataset.go;render();scrollTo(0,0)});document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{category=b.dataset.cat;screen="category";render();scrollTo(0,0)});document.querySelectorAll("[data-item]").forEach(b=>b.onclick=()=>{selected=Number(b.dataset.item);screen="detail";render();scrollTo(0,0)});document.querySelectorAll("[data-fav]").forEach(b=>b.onclick=()=>{let i=Number(b.dataset.fav);fav=fav.includes(i)?fav.filter(v=>v!==i):[...fav,i];try{localStorage.setItem("test5-fav",JSON.stringify(fav))}catch(e){}render()});document.querySelectorAll("[data-answer]").forEach(b=>b.onclick=()=>{if(answer===null){answer=Number(b.dataset.answer);render()}});document.querySelectorAll("[data-next]").forEach(b=>b.onclick=()=>{question=(question+1)%questions.length;answer=null;render()});const s=document.getElementById("search");if(s){s.oninput=()=>{query=s.value;let rows=data.filter(x=>x.flat().join(" ").toLocaleLowerCase("de").includes(query.toLocaleLowerCase("de")));document.getElementById("searchresults").innerHTML=query.trim()?'<div class="panel">'+(rows.length?rows.map(itemRow).join(""):'<div class="empty">Keine Treffer</div>')+'</div>':'';document.querySelectorAll("#searchresults [data-item]").forEach(b=>b.onclick=()=>{selected=Number(b.dataset.item);category=null;screen="detail";render();scrollTo(0,0)})};if(query)s.oninput()}}
-try{render()}catch(err){document.getElementById("app").insertAdjacentHTML("beforeend","<p>Die App konnte nicht gestartet werden. Bitte die Seite neu laden.</p>");console.error(err)}if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+function render(){
+const app=document.getElementById("app");
+app.innerHTML=screen==="home"?home():screen==="category"?categoryView():screen==="detail"?detail():screen==="guides"?guides():screen==="favorites"?favorites():screen==="quiz"?quiz():knowledge();
+const tabs=[["home","⌂","Übersicht"],["favorites","♡","Favoriten"],["guides","▣","Leitfäden"],["quiz","◇","Quiz"],["knowledge","ⓘ","Wissen"]];
+document.getElementById("bottom").innerHTML=tabs.map(t=>'<button type="button" data-go="'+t[0]+'" class="'+(screen===t[0]?"active":"")+'"><span>'+t[1]+'</span>'+t[2]+'</button>').join("");
+updateSearch();
+}
+function updateSearch(){
+const box=document.getElementById("searchresults");
+if(!box)return;
+const rows=data.filter(x=>x.flat().join(" ").toLocaleLowerCase("de").includes(query.toLocaleLowerCase("de")));
+box.innerHTML=query.trim()?'<div class="panel">'+(rows.length?rows.map(itemRow).join(""):'<div class="empty">Keine Treffer</div>')+'</div>':'';
+}
+document.addEventListener("click",function(ev){
+const el=ev.target.closest("[data-go],[data-cat],[data-item],[data-fav],[data-answer],[data-next]");
+if(!el)return;
+ev.preventDefault();
+if(el.hasAttribute("data-go"))screen=el.getAttribute("data-go");
+else if(el.hasAttribute("data-cat")){category=el.getAttribute("data-cat");screen="category"}
+else if(el.hasAttribute("data-item")){selected=Number(el.getAttribute("data-item"));screen="detail"}
+else if(el.hasAttribute("data-fav")){const i=Number(el.getAttribute("data-fav"));fav=fav.includes(i)?fav.filter(v=>v!==i):[...fav,i];try{localStorage.setItem("test5-fav",JSON.stringify(fav))}catch(e){}}
+else if(el.hasAttribute("data-answer")){if(answer!==null)return;answer=Number(el.getAttribute("data-answer"))}
+else if(el.hasAttribute("data-next")){question=(question+1)%questions.length;answer=null}
+render();
+window.scrollTo(0,0);
+});
+document.addEventListener("input",function(ev){if(ev.target.id==="search"){query=ev.target.value;updateSearch()}});
+try{render()}catch(err){document.getElementById("app").insertAdjacentHTML("beforeend","<p>Die App konnte nicht gestartet werden: "+String(err.message||err)+"</p>");console.error(err)}if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 </script></body></html>
